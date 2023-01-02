@@ -9,9 +9,9 @@ fn main() {
 
     let native_options = eframe::NativeOptions::default();
     eframe::run_native(
-        "eframe template",
+        "rusty_pomodoro",
         native_options,
-        Box::new(|cc| Box::new(eframe_template::TemplateApp::new(cc))),
+        Box::new(|cc| Box::new(rusty_pomodoro::TemplateApp::new(cc))),
     );
 }
 
