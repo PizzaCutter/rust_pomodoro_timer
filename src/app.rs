@@ -42,13 +42,6 @@ impl Default for RunMode {
     }
 }
 
-#[derive(Default)]
-pub struct TimeData {
-    time_hours: i32,
-    time_minutes: i32,
-    time_seconds: i32,
-}
-
 pub struct Timer {
     is_running: bool,
     timer: u128,
@@ -121,16 +114,7 @@ pub struct TemplateApp {
     run_mode: RunMode,
 
     #[serde(skip)]
-    current_date_time : TimeData,
-
-    #[serde(skip)]
-    pomodoro_timer : Timer,
-
-    #[serde(skip)]
-    rest_time : TimeData,
-
-    #[serde(skip)]
-    runtime_timer : TimeData,
+    pomodoro_timer : Timer
 }
 
 impl Default for TemplateApp {
@@ -140,10 +124,7 @@ impl Default for TemplateApp {
             label: "Hello World!".to_owned(),
             value: 2.7,
             run_mode: RunMode::Continuous,
-            current_date_time: TimeData::default(),
             pomodoro_timer: Timer::new(2, 23, 17),
-            rest_time: TimeData::default(),
-            runtime_timer: TimeData::default()
         }
     }
 }
@@ -176,7 +157,6 @@ impl eframe::App for TemplateApp {
         let label = &mut self.label;
         let value = &mut self.value;
         let run_mode = self.run_mode;
-        let time_data = &mut self.current_date_time;
         let pomodoro_timer = &mut self.pomodoro_timer;
 
         // Examples of how to create different panels and windows.
@@ -209,10 +189,10 @@ impl eframe::App for TemplateApp {
             }
 
             let local_time : DateTime<Local> = Local::now();
-            time_data.time_hours = local_time.hour() as i32;
-            time_data.time_minutes = local_time.minute() as i32;
-            time_data.time_seconds = local_time.second() as i32; 
-            ui.label(format!("{}:{}:{}", time_data.time_hours, time_data.time_minutes, time_data.time_seconds));
+            let time_in_hours = local_time.hour() as i32;
+            let time_in_minutes = local_time.minute() as i32;
+            let time_in_seconds = local_time.second() as i32; 
+            ui.label(format!("{}:{}:{}", time_in_hours, time_in_minutes, time_in_seconds));
 
             if ui.button("start timer").clicked() {
                 pomodoro_timer.start_timer();
