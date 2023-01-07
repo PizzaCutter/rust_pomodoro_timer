@@ -44,8 +44,9 @@ impl Default for RunMode {
 
 pub struct Timer {
     is_running: bool,
-    timer: u128,
     previous_timestamp: Instant,
+    start_time: u128,
+    timer: u128,
 }
 
 impl Timer {
@@ -53,9 +54,10 @@ impl Timer {
     {
         let seconds_in_ms = ((hours as u128 * 60 * 60) + (minutes as u128 * 60) + seconds as u128) * 1000;
         Timer {
+            is_running: false,
             previous_timestamp: Instant::now(),
+            start_time: seconds_in_ms,
             timer: seconds_in_ms,
-            is_running: false
         }
     }
 
@@ -75,12 +77,13 @@ impl Timer {
         self.is_running = true;
     }
 
-    fn pause_timer() {
-
+    fn pause_timer(&mut self) {
+        self.is_running = false;
     }
 
-    fn stop_timer() {
-
+    fn stop_timer(&mut self) {
+        self.is_running = false;
+        self.timer = self.start_time;
     }
 
     fn get_hours_remaining(&self) -> u32 {
@@ -196,6 +199,12 @@ impl eframe::App for TemplateApp {
 
             if ui.button("start timer").clicked() {
                 pomodoro_timer.start_timer();
+            }
+            if ui.button("pause timer").clicked() {
+                pomodoro_timer.pause_timer();
+            }
+            if ui.button("stop timer").clicked() {
+                pomodoro_timer.stop_timer();
             }
             pomodoro_timer.update();
 
