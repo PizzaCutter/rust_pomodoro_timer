@@ -1,4 +1,5 @@
-use chrono::prelude::*;
+use std::time::Instant;
+use chrono::*;
 
 /// How often we repaint the demo app by default
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -48,6 +49,63 @@ pub struct TimeData {
     time_seconds: i32,
 }
 
+pub struct Timer {
+    is_running: bool,
+    timer: u128,
+    previous_timestamp: Instant,
+}
+
+impl Timer {
+    fn new(hours : u32, minutes: u32, seconds : u32) -> Timer
+    {
+        let seconds_in_ms = ((hours as u128 * 60 * 60) + (minutes as u128 * 60) + seconds as u128) * 1000;
+        Timer {
+            previous_timestamp: Instant::now(),
+            timer: seconds_in_ms,
+            is_running: false
+        }
+    }
+
+    fn update(&mut self)
+    {
+        if !self.is_running {
+            return;
+        }
+
+        let ms_difference = self.previous_timestamp.elapsed().as_millis(); 
+        self.timer -= ms_difference;
+        self.previous_timestamp = Instant::now();
+    }
+
+    fn start_timer(&mut self){
+        self.previous_timestamp = Instant::now();
+        self.is_running = true;
+    }
+
+    fn pause_timer() {
+
+    }
+
+    fn stop_timer() {
+
+    }
+
+    fn get_hours_remaining(&self) -> u32 {
+        let hours = (self.timer / 1000 / 60 / 60) % 60;
+        hours as u32
+    }
+
+    fn get_minutes_remaining(&self) -> u32 {
+        let minutes = (self.timer / 1000 / 60) % 60;
+        minutes as u32
+    }
+
+    fn get_seconds_remaining(&self) -> u32 {
+        let seconds = (self.timer / 1000) % 60;
+        seconds as u32
+    }
+}
+
 /// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
@@ -66,7 +124,7 @@ pub struct TemplateApp {
     current_date_time : TimeData,
 
     #[serde(skip)]
-    pomodoro_time : TimeData,
+    pomodoro_timer : Timer,
 
     #[serde(skip)]
     rest_time : TimeData,
@@ -83,7 +141,7 @@ impl Default for TemplateApp {
             value: 2.7,
             run_mode: RunMode::Continuous,
             current_date_time: TimeData::default(),
-            pomodoro_time: TimeData::default(),
+            pomodoro_timer: Timer::new(2, 23, 17),
             rest_time: TimeData::default(),
             runtime_timer: TimeData::default()
         }
@@ -119,6 +177,7 @@ impl eframe::App for TemplateApp {
         let value = &mut self.value;
         let run_mode = self.run_mode;
         let time_data = &mut self.current_date_time;
+        let pomodoro_timer = &mut self.pomodoro_timer;
 
         // Examples of how to create different panels and windows.
         // Pick whichever suits you.
@@ -154,6 +213,13 @@ impl eframe::App for TemplateApp {
             time_data.time_minutes = local_time.minute() as i32;
             time_data.time_seconds = local_time.second() as i32; 
             ui.label(format!("{}:{}:{}", time_data.time_hours, time_data.time_minutes, time_data.time_seconds));
+
+            if ui.button("start timer").clicked() {
+                pomodoro_timer.start_timer();
+            }
+            pomodoro_timer.update();
+
+            ui.label(format!("pomodoro timer {}:{}:{}", pomodoro_timer.get_hours_remaining(), pomodoro_timer.get_minutes_remaining(), pomodoro_timer.get_seconds_remaining()));
 
             ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
                 ui.horizontal(|ui| {
