@@ -197,15 +197,22 @@ impl eframe::App for TemplateApp {
             let time_in_seconds = local_time.second() as i32; 
             ui.label(format!("{}:{}:{}", time_in_hours, time_in_minutes, time_in_seconds));
 
-            if ui.button("start timer").clicked() {
-                pomodoro_timer.start_timer();
-            }
-            if ui.button("pause timer").clicked() {
-                pomodoro_timer.pause_timer();
-            }
-            if ui.button("stop timer").clicked() {
-                pomodoro_timer.stop_timer();
-            }
+            ui.horizontal(|ui| {
+                if pomodoro_timer.is_running {
+                    if ui.button("pause timer").clicked() {
+                        pomodoro_timer.pause_timer();
+                    }
+                }else {
+                    if ui.button("start timer").clicked() {
+                        pomodoro_timer.start_timer();
+                    }
+                }
+            
+                if ui.button("stop timer").clicked() {
+                    pomodoro_timer.stop_timer();
+                }
+            });
+
             pomodoro_timer.update();
 
             ui.label(format!("pomodoro timer {}:{}:{}", pomodoro_timer.get_hours_remaining(), pomodoro_timer.get_minutes_remaining(), pomodoro_timer.get_seconds_remaining()));
