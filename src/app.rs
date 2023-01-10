@@ -68,7 +68,11 @@ impl Timer {
         }
 
         let ms_difference = self.previous_timestamp.elapsed().as_millis(); 
-        self.timer -= ms_difference;
+        if self.timer <= ms_difference {
+            self.timer = 0;
+        }else {
+            self.timer -= ms_difference;
+        }
         self.previous_timestamp = Instant::now();
     }
 
@@ -122,7 +126,7 @@ pub struct TemplateApp {
 
 impl Default for TemplateApp {
     fn default() -> Self {
-        let pomodoro_timer = Timer::new(2, 23, 17);
+        let pomodoro_timer = Timer::new(0, 0, 17);
         let pause_timer = Timer::new(0, 15, 30);
         Self {
             value: 2.7,
@@ -180,6 +184,16 @@ impl eframe::App for TemplateApp {
                 if ui.button("Pause").clicked() {
                     *active_timer_index = 1;
                     timer_switched = true;
+                }
+                let current_timer = &mut timers[*active_timer_index];
+                if current_timer.timer == 0 {
+                    if *active_timer_index == 0 {
+                        *active_timer_index = 1;
+                    }else {
+                        *active_timer_index = 0;
+                    }
+                    timer_switched = true;
+                    current_timer.stop_timer();
                 }
             });
 
